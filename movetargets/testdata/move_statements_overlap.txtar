@@ -1,0 +1,24 @@
+Overlapping --move_statements ranges move each statement once.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --move_statements=3-3 --move_statements=3-8
+-- in/libc/BUILD.bazel --
+load(":defs.bzl", "my_rule")
+
+STDLIB_HDRS = ["src/stdlib/a.h"]
+
+my_rule(
+    name = "a",
+    srcs = ["src/stdlib/a.cpp"],
+)
+-- out/libc/BUILD.bazel --
+-- out/libc/src/stdlib/BUILD.bazel --
+load("//libc:defs.bzl", "my_rule")
+
+STDLIB_HDRS = ["a.h"]
+
+my_rule(
+    name = "a",
+    srcs = ["a.cpp"],
+)
+-- stderr --
+Moved 0 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased). Also moved 2 statements and 0 extra names.
