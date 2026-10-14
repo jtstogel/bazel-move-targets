@@ -1,0 +1,31 @@
+Labels inside $(location ...) and similar make variables are rewritten.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+filegroup(
+    name = "table",
+    srcs = ["src/stdlib/table.txt"],
+)
+
+sh_test(
+    name = "table_test",
+    srcs = ["table_test.sh"],
+    args = ["$(location :table) $(SRCS)"],
+    data = [":table"],
+)
+-- out/libc/BUILD.bazel --
+sh_test(
+    name = "table_test",
+    srcs = ["table_test.sh"],
+    args = ["$(location //libc/src/stdlib:table) $(SRCS)"],
+    data = ["//libc/src/stdlib:table"],
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+filegroup(
+    name = "table",
+    srcs = ["table.txt"],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
+Rewrote references in 1 files:
+  libc/BUILD.bazel: 2

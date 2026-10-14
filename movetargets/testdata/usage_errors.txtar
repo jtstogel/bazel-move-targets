@@ -1,0 +1,43 @@
+Usage errors exit with 2; a destination outside the source package, a missing
+source package, unknown rule names and an empty result exit with 1.
+-- args --
+bogus
+move --dst_package=//libc/src/stdlib
+move --src_package=//libc --dst_package=//other
+move --src_package=//nope --dst_package=//nope/x
+move --src_package=//libc --dst_package=//libc/src/stdlib --exclude=nope
+move --src_package=//libc --dst_package=//libc/src/stdlib --rename_strip_package_prefix=atoi
+move --src_package=//libc --dst_package=//libc/src/string
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+-- stderr --
+unknown command "bogus"
+usage:
+  bazel-move-targets plan  --workspace_root=DIR [selection flags] [--out=config.json]
+  bazel-move-targets apply --workspace_root=DIR --config=config.json [--dry_run]
+  bazel-move-targets move  --workspace_root=DIR [selection flags] [--dry_run]
+Run "bazel-move-targets <command> --help" for the flags.
+--src_package and --dst_package are required
+usage:
+  bazel-move-targets plan  --workspace_root=DIR [selection flags] [--out=config.json]
+  bazel-move-targets apply --workspace_root=DIR --config=config.json [--dry_run]
+  bazel-move-targets move  --workspace_root=DIR [selection flags] [--dry_run]
+Run "bazel-move-targets <command> --help" for the flags.
+dst_package //other must be strictly under src_package //libc
+no BUILD file for //nope
+Errors (1):
+  [unknown-target] no rule named "nope" in //libc
+Errors (1):
+  libc/BUILD.bazel:1: [bad-new-name] invalid new name "" for "atoi"
+the config lists no targets
+-- exit --
+2
+2
+1
+1
+1
+1
+1

@@ -1,0 +1,63 @@
+References from other packages are rewritten. A local repository prefix is
+kept; other repositories are left alone.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --local_repo_names=llvm-project
+-- in/flang-rt/BUILD.bazel --
+cc_library(
+    name = "rt",
+    deps = [
+        "@llvm-project//libc:atoi",
+        "@other//libc:atoi",
+    ],
+)
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+
+cc_library(
+    name = "common",
+    hdrs = ["common.h"],
+)
+-- in/libc/test/BUILD.bazel --
+cc_test(
+    name = "atoi_test",
+    srcs = ["atoi_test.cpp"],
+    deps = [
+        "//libc:atoi",
+        "//libc:common",
+    ],
+)
+-- out/flang-rt/BUILD.bazel --
+cc_library(
+    name = "rt",
+    deps = [
+        "@llvm-project//libc/src/stdlib:atoi",
+        "@other//libc:atoi",
+    ],
+)
+-- out/libc/BUILD.bazel --
+cc_library(
+    name = "common",
+    hdrs = ["common.h"],
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+)
+-- out/libc/test/BUILD.bazel --
+cc_test(
+    name = "atoi_test",
+    srcs = ["atoi_test.cpp"],
+    deps = [
+        "//libc:common",
+        "//libc/src/stdlib:atoi",
+    ],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
+Rewrote references in 2 files:
+  flang-rt/BUILD.bazel: 1
+  libc/test/BUILD.bazel: 1

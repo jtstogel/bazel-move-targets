@@ -9,3 +9,6 @@ func movedStatements(s *srcPackage, ranges []lineRange, rep *report) []build.Exp
 func statementNames(stmts []build.Expr) map[string]bool {
 	return map[string]bool{}
 }
+
+func moveStatement(st build.Expr, m *labelMap, a attrKinds) {
+}

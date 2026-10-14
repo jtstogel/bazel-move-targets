@@ -1,0 +1,23 @@
+A moved rule that uses a top-level variable of the source file is moved as-is,
+with a warning. The assignment itself is never rewritten, only reported.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --include=stdlib_headers
+-- in/libc/BUILD.bazel --
+STDLIB_HDRS = ["src/stdlib/atoi.h"]
+
+cc_library(
+    name = "stdlib_headers",
+    hdrs = STDLIB_HDRS,
+)
+-- out/libc/BUILD.bazel --
+STDLIB_HDRS = ["src/stdlib/atoi.h"]
+-- out/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "stdlib_headers",
+    hdrs = STDLIB_HDRS,
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
+Warnings (2):
+  libc/BUILD.bazel:1: [assignment-mentions-moved-file] STDLIB_HDRS mentions "src/stdlib/atoi.h", which moves to //libc/src/stdlib; update it by hand
+  libc/BUILD.bazel:3: [dangling-toplevel-var] "stdlib_headers" uses the top-level variable STDLIB_HDRS, which stays in //libc

@@ -1,0 +1,15 @@
+Naming a rule of a refused kind is an error.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --include=gen
+-- in/libc/BUILD.bazel --
+genrule(
+    name = "gen",
+    srcs = ["src/stdlib/table.txt"],
+    outs = ["table.inc"],
+    cmd = "cp $(SRCS) $(OUTS)",
+)
+-- stderr --
+Errors (1):
+  libc/BUILD.bazel:1: [refused-kind] "gen" is a genrule, which is never moved
+-- exit --
+1

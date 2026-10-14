@@ -1,0 +1,77 @@
+The longest matching prefix is stripped. References elsewhere use the new
+names.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/__support/CPP --rename_strip_package_prefix=__support_,__support_cpp_
+-- in/libc/BUILD.bazel --
+load(":libc_build_rules.bzl", "libc_support_library")
+
+libc_support_library(
+    name = "__support_cpp_string",
+    hdrs = ["src/__support/CPP/string.h"],
+    deps = [
+        ":__support_CPP_limits",
+        ":__support_cpp_bit",
+    ],
+)
+
+libc_support_library(
+    name = "__support_cpp_bit",
+    hdrs = ["src/__support/CPP/bit.h"],
+)
+
+libc_support_library(
+    name = "__support_CPP_limits",
+    hdrs = ["src/__support/CPP/limits.h"],
+)
+
+libc_support_library(
+    name = "__support_str_to_integer",
+    hdrs = ["src/__support/str_to_integer.h"],
+    deps = [":__support_cpp_string"],
+)
+-- in/libc/test/BUILD.bazel --
+libc_test(
+    name = "bit_test",
+    srcs = ["bit_test.cpp"],
+    deps = ["//libc:__support_cpp_bit"],
+)
+-- out/libc/BUILD.bazel --
+load(":libc_build_rules.bzl", "libc_support_library")
+
+libc_support_library(
+    name = "__support_str_to_integer",
+    hdrs = ["src/__support/str_to_integer.h"],
+    deps = ["//libc/src/__support/CPP:string"],
+)
+-- out/libc/src/__support/CPP/BUILD.bazel --
+load("//libc:libc_build_rules.bzl", "libc_support_library")
+
+libc_support_library(
+    name = "string",
+    hdrs = ["string.h"],
+    deps = [
+        ":CPP_limits",
+        ":bit",
+    ],
+)
+
+libc_support_library(
+    name = "bit",
+    hdrs = ["bit.h"],
+)
+
+libc_support_library(
+    name = "CPP_limits",
+    hdrs = ["limits.h"],
+)
+-- out/libc/test/BUILD.bazel --
+libc_test(
+    name = "bit_test",
+    srcs = ["bit_test.cpp"],
+    deps = ["//libc/src/__support/CPP:bit"],
+)
+-- stderr --
+Moved 3 rules from //libc to //libc/src/__support/CPP (3 renamed, 0 aliased).
+Rewrote references in 2 files:
+  libc/BUILD.bazel: 1
+  libc/test/BUILD.bazel: 1

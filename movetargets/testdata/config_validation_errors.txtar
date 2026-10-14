@@ -1,0 +1,43 @@
+"apply" re-validates the config: unknown rules, wrong kinds, duplicates, bad
+and colliding names are errors, and nothing is written.
+-- args --
+apply --config=$TMP/config.json
+-- config.json --
+{
+  "src_package": "libc",
+  "dst_package": "libc/src/stdlib",
+  "label_attrs": ["deps"],
+  "file_attrs": ["srcs"],
+  "refuse_rule_kinds": [],
+  "targets": [
+    {"name": "missing", "new_name": "missing", "kind": "cc_library"},
+    {"name": "atoi", "new_name": "atoi", "kind": "libc_function"},
+    {"name": "atol", "new_name": "", "kind": "cc_library"},
+    {"name": "atoll", "new_name": "atoi", "kind": "cc_library"},
+    {"name": "atoll", "new_name": "atoll", "kind": "cc_library"}
+  ]
+}
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+
+cc_library(
+    name = "atol",
+    srcs = ["src/stdlib/atol.cpp"],
+)
+
+cc_library(
+    name = "atoll",
+    srcs = ["src/stdlib/atoll.cpp"],
+)
+-- stderr --
+Errors (5):
+  libc/BUILD.bazel:6: [bad-new-name] invalid new name "" for "atol"
+  libc/BUILD.bazel:11: [collision] more than one rule would be named "atoi" in //libc/src/stdlib
+  libc/BUILD.bazel:11: [duplicate-target] "atoll" is listed twice
+  libc/BUILD.bazel:1: [kind-mismatch] "atoi" is a cc_library, but the config says libc_function
+  [unknown-target] no rule named "missing" in //libc
+-- exit --
+1

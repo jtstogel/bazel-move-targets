@@ -1,0 +1,58 @@
+A libc_function becomes an alias at the same position, keeping its visibility.
+Its comment moves with the rule. Other kinds are removed without an alias.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --alias_for_rule_kind=libc_function
+-- in/libc/BUILD.bazel --
+load(":libc_build_rules.bzl", "libc_function", "libc_support_library")
+
+libc_support_library(
+    name = "stdlib_util",
+    hdrs = ["src/stdlib/util.h"],
+)
+
+# Converts a string to an int.
+libc_function(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+    hdrs = ["src/stdlib/atoi.h"],
+    visibility = [":__subpackages__"],
+    deps = [":stdlib_util"],
+)
+
+libc_function(
+    name = "strlen",
+    srcs = ["src/string/strlen.cpp"],
+    hdrs = ["src/string/strlen.h"],
+)
+-- out/libc/BUILD.bazel --
+load(":libc_build_rules.bzl", "libc_function")
+
+alias(
+    name = "atoi",
+    actual = "//libc/src/stdlib:atoi",
+    visibility = [":__subpackages__"],
+)
+
+libc_function(
+    name = "strlen",
+    srcs = ["src/string/strlen.cpp"],
+    hdrs = ["src/string/strlen.h"],
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+load("//libc:libc_build_rules.bzl", "libc_function", "libc_support_library")
+
+libc_support_library(
+    name = "stdlib_util",
+    hdrs = ["util.h"],
+)
+
+# Converts a string to an int.
+libc_function(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+    hdrs = ["atoi.h"],
+    visibility = ["//libc:__subpackages__"],
+    deps = [":stdlib_util"],
+)
+-- stderr --
+Moved 2 rules from //libc to //libc/src/stdlib (0 renamed, 1 aliased).

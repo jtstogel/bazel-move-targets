@@ -1,0 +1,20 @@
+A glob in a rule that stays could match files under the destination
+directory, which would then belong to another package: error, nothing is
+written.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "all_headers",
+    hdrs = glob(["src/**/*.h"]),
+)
+
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+-- stderr --
+Errors (1):
+  libc/BUILD.bazel:3: [glob-reaches-destination] glob pattern "src/**/*.h" can match files under src/stdlib/, which will belong to //libc/src/stdlib
+-- exit --
+1

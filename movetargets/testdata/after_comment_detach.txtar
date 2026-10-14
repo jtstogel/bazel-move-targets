@@ -1,0 +1,29 @@
+A section header right below a rule is parsed as that rule's trailing comment.
+It stays in the source when the rule moves.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+############################## string targets ##############################
+
+cc_library(
+    name = "strlen",
+    srcs = ["src/string/strlen.cpp"],
+)
+-- out/libc/BUILD.bazel --
+############################## string targets ##############################
+
+cc_library(
+    name = "strlen",
+    srcs = ["src/string/strlen.cpp"],
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).

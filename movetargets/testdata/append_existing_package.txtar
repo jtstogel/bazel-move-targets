@@ -1,0 +1,50 @@
+Moving into an existing package: its references are rewritten, loads are
+merged, and the rules are appended.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+load(":libc_build_rules.bzl", "libc_function", "libc_support_library")
+
+libc_support_library(
+    name = "__support_common",
+    hdrs = ["src/__support/common.h"],
+)
+
+libc_function(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+    deps = [":__support_common"],
+)
+-- in/libc/src/stdlib/BUILD.bazel --
+load("//libc:libc_build_rules.bzl", "libc_support_library")
+
+libc_support_library(
+    name = "existing",
+    hdrs = ["existing.h"],
+    deps = ["//libc:atoi"],
+)
+-- out/libc/BUILD.bazel --
+load(":libc_build_rules.bzl", "libc_support_library")
+
+libc_support_library(
+    name = "__support_common",
+    hdrs = ["src/__support/common.h"],
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+load("//libc:libc_build_rules.bzl", "libc_function", "libc_support_library")
+
+libc_support_library(
+    name = "existing",
+    hdrs = ["existing.h"],
+    deps = [":atoi"],
+)
+
+libc_function(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+    deps = ["//libc:__support_common"],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
+Rewrote references in 1 files:
+  libc/src/stdlib/BUILD.bazel: 1

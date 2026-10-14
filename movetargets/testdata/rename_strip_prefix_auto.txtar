@@ -1,0 +1,37 @@
+--rename_strip_package_prefix=auto derives the prefixes from the
+destination: "__support_CPP_", "CPP_" and their lowercase forms.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/__support/CPP --rename_strip_package_prefix=auto
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "__support_cpp_bit",
+    hdrs = ["src/__support/CPP/bit.h"],
+)
+
+cc_library(
+    name = "__support_CPP_limits",
+    hdrs = ["src/__support/CPP/limits.h"],
+)
+
+cc_library(
+    name = "cpp_string",
+    hdrs = ["src/__support/CPP/string.h"],
+)
+-- out/libc/BUILD.bazel --
+-- out/libc/src/__support/CPP/BUILD.bazel --
+cc_library(
+    name = "bit",
+    hdrs = ["bit.h"],
+)
+
+cc_library(
+    name = "limits",
+    hdrs = ["limits.h"],
+)
+
+cc_library(
+    name = "string",
+    hdrs = ["string.h"],
+)
+-- stderr --
+Moved 3 rules from //libc to //libc/src/__support/CPP (3 renamed, 0 aliased).

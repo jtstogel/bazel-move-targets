@@ -1,0 +1,48 @@
+"apply" respects a hand-edited config: here new_name was changed and the
+default attribute lists were trimmed.
+-- args --
+apply --config=$TMP/config.json
+-- config.json --
+{
+  "src_package": "//libc",
+  "dst_package": "libc/src/stdlib",
+  "package_comment": "",
+  "label_attrs": ["deps"],
+  "file_attrs": ["srcs", "hdrs"],
+  "refuse_rule_kinds": [],
+  "targets": [
+    {"name": "stdlib_util", "new_name": "util", "kind": "libc_support_library", "alias": false}
+  ]
+}
+-- in/libc/BUILD.bazel --
+load(":libc_build_rules.bzl", "libc_function", "libc_support_library")
+
+libc_support_library(
+    name = "stdlib_util",
+    hdrs = ["src/stdlib/util.h"],
+)
+
+libc_function(
+    name = "strlen",
+    srcs = ["src/string/strlen.cpp"],
+    deps = [":stdlib_util"],
+)
+-- out/libc/BUILD.bazel --
+load(":libc_build_rules.bzl", "libc_function")
+
+libc_function(
+    name = "strlen",
+    srcs = ["src/string/strlen.cpp"],
+    deps = ["//libc/src/stdlib:util"],
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+load("//libc:libc_build_rules.bzl", "libc_support_library")
+
+libc_support_library(
+    name = "util",
+    hdrs = ["util.h"],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (1 renamed, 0 aliased).
+Rewrote references in 1 files:
+  libc/BUILD.bazel: 1

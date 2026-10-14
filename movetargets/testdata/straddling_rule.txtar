@@ -1,0 +1,22 @@
+A rule with files both inside and outside the destination directory is an
+error unless it is excluded (see leftover_file_reference).
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+
+cc_library(
+    name = "mixed",
+    hdrs = [
+        "src/stdlib/foo.h",
+        "src/string/bar.h",
+    ],
+)
+-- stderr --
+Errors (1):
+  libc/BUILD.bazel:6: [straddling-rule] "mixed" has files both inside and outside src/stdlib/; split it by hand, or pass --exclude=mixed
+-- exit --
+1

@@ -1,0 +1,29 @@
+A moved rule without file attributes gets a no-file-attrs warning, unless it
+leaves an alias behind.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --include=stdlib_a,stdlib_b --alias_targets=stdlib_b
+-- in/libc/BUILD.bazel --
+libc_group(
+    name = "stdlib_a",
+)
+
+libc_group(
+    name = "stdlib_b",
+)
+-- out/libc/BUILD.bazel --
+alias(
+    name = "stdlib_b",
+    actual = "//libc/src/stdlib:stdlib_b",
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+libc_group(
+    name = "stdlib_a",
+)
+
+libc_group(
+    name = "stdlib_b",
+)
+-- stderr --
+Moved 2 rules from //libc to //libc/src/stdlib (0 renamed, 1 aliased).
+Warnings (1):
+  libc/BUILD.bazel:1: [no-file-attrs] "stdlib_a" has no file attributes; its macro may compute package-relative paths
