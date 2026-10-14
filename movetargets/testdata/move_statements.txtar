@@ -1,0 +1,71 @@
+--move_statements moves top-level statements verbatim, before the moved rules:
+an assignment, a comprehension and a rule with outs. Strings that start with
+the destination directory lose it, and labels of what they define are
+rewritten elsewhere.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --move_statements=1-12 --extra_names=abs,labs
+-- in/libc/BUILD.bazel --
+STDLIB_FUNCS = ["abs", "labs"]
+
+[cc_library(
+    name = n,
+    srcs = ["src/stdlib/" + n + ".cpp"],
+) for n in STDLIB_FUNCS]
+
+genrule(
+    name = "gen_table",
+    outs = ["src/stdlib/table.inc"],
+    cmd = "echo > $@",
+)
+
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+    hdrs = [":gen_table"],
+    deps = [":abs"],
+)
+
+cc_library(
+    name = "user",
+    srcs = ["user.cpp"],
+    deps = [
+        ":abs",
+        ":gen_table",
+    ],
+)
+-- out/libc/BUILD.bazel --
+cc_library(
+    name = "user",
+    srcs = ["user.cpp"],
+    deps = [
+        "//libc/src/stdlib:abs",
+        "//libc/src/stdlib:gen_table",
+    ],
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+STDLIB_FUNCS = [
+    "abs",
+    "labs",
+]
+
+[cc_library(
+    name = n,
+    srcs = ["" + n + ".cpp"],
+) for n in STDLIB_FUNCS]
+
+genrule(
+    name = "gen_table",
+    outs = ["table.inc"],
+    cmd = "echo > $@",
+)
+
+cc_library(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+    hdrs = ["gen_table"],
+    deps = [":abs"],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased). Also moved 3 statements and 2 extra names.
+Rewrote references in 1 files:
+  libc/BUILD.bazel: 2

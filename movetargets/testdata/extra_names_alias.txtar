@@ -1,0 +1,34 @@
+--extra_names moves names that no literal rule defines, e.g. targets made by
+a macro. References are rewritten, and with --alias_targets a root alias is
+appended to the source file.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --move_statements=3-3 --extra_names=atoi_test_suite=tests --alias_targets=atoi_test_suite
+-- in/libc/BUILD.bazel --
+load(":defs.bzl", "make_tests")
+
+make_tests(prefix = "atoi")
+
+cc_library(
+    name = "user",
+    srcs = ["user.cpp"],
+    data = [":atoi_test_suite"],
+)
+-- out/libc/BUILD.bazel --
+cc_library(
+    name = "user",
+    srcs = ["user.cpp"],
+    data = ["//libc/src/stdlib:tests"],
+)
+
+alias(
+    name = "atoi_test_suite",
+    actual = "//libc/src/stdlib:tests",
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+load("//libc:defs.bzl", "make_tests")
+
+make_tests(prefix = "atoi")
+-- stderr --
+Moved 0 rules from //libc to //libc/src/stdlib (1 renamed, 1 aliased). Also moved 1 statements and 1 extra names.
+Rewrote references in 1 files:
+  libc/BUILD.bazel: 1

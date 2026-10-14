@@ -1,0 +1,83 @@
+The files a moved rule generates move with it, re-rooted like its sources:
+references to them are respelled for the new package.
+-- args --
+move --src_package=//libc --dst_package=//libc/include --move_statements=5-14 --file_attrs=src
+-- in/libc/BUILD.bazel --
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load(":defs.bzl", "my_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+copy_file(
+    name = "copy_common",
+    src = "include/common.h",
+    out = "staging/common.h",
+)
+
+cc_library(
+    name = "public_headers",
+    textual_hdrs = ["staging/common.h"],
+)
+
+copy_file(
+    name = "copy_gen",
+    src = "include/common.h",
+    out = "include/gen.h",
+)
+
+my_library(
+    name = "root_user",
+    srcs = ["staging/common.h"],
+)
+-- in/libc/include/common.h --
+-- in/libc/test/BUILD.bazel --
+load("//libc:defs.bzl", "my_library")
+
+my_library(
+    name = "t",
+    srcs = [
+        "//libc:include/gen.h",
+        "//libc:staging/common.h",
+    ],
+)
+-- out/libc/BUILD.bazel --
+load(":defs.bzl", "my_library")
+
+my_library(
+    name = "root_user",
+    srcs = ["//libc/include:staging/common.h"],
+)
+-- out/libc/include/BUILD.bazel --
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+copy_file(
+    name = "copy_common",
+    src = "common.h",
+    out = "staging/common.h",
+)
+
+cc_library(
+    name = "public_headers",
+    textual_hdrs = ["staging/common.h"],
+)
+
+copy_file(
+    name = "copy_gen",
+    src = "common.h",
+    out = "gen.h",
+)
+-- out/libc/test/BUILD.bazel --
+load("//libc:defs.bzl", "my_library")
+
+my_library(
+    name = "t",
+    srcs = [
+        "//libc/include:gen.h",
+        "//libc/include:staging/common.h",
+    ],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/include (0 renamed, 0 aliased). Also moved 2 statements and 0 extra names.
+Rewrote references in 2 files:
+  libc/BUILD.bazel: 1
+  libc/test/BUILD.bazel: 2
