@@ -1,0 +1,50 @@
+--help prints the flags and exits with 0.
+-- args --
+plan --help
+-- in/libc/BUILD.bazel --
+-- stderr --
+Usage of bazel-move-targets plan:
+  -alias_for_rule_kind value
+    	rule kind that leaves an alias() behind
+  -alias_targets value
+    	rule or extra names that leave an alias() behind
+  -dst_package string
+    	subpackage to move rules into, e.g. //foo/bar (required)
+  -exclude value
+    	rule names to remove from the directory selection
+  -extra_names value
+    	OLD or OLD=NEW: names with no literal rule (made by macros or comprehensions) that move too
+  -file_attrs value
+    	attributes whose bare strings are files, in addition to the defaults
+  -include value
+    	rule names to add to the directory selection
+  -include_name_prefix value
+    	also select rules without files whose names start with this prefix
+  -label_attrs value
+    	attributes whose bare strings are labels, in addition to the defaults
+  -local_repo_names value
+    	repository names that refer to this workspace: foo for @foo//...
+  -move_statements value
+    	FIRST-LAST: line range of top-level statements to move verbatim
+  -out string
+    	config file to write (default: stdout)
+  -output_attrs value
+    	attributes that name the files a rule generates, in addition to the defaults
+  -package_comment string
+    	comment line for a new destination BUILD file
+  -package_relative_attrs value
+    	attributes that are relative to the package directory and are reported when moved, in addition to the defaults
+  -refuse_rule_kind value
+    	rule kind never to move, in addition to the defaults
+  -rename_strip_package_prefix value
+    	prefix to strip from moved rule names; the longest match wins; "auto" derives prefixes from the destination directory (without a leading src/, as LLVM-libc names it)
+  -src_package string
+    	package to move rules out of, e.g. //foo (required)
+  -strict_source_directories
+    	require files to be directly in the destination directory
+  -targets value
+    	explicit rule names (disables directory selection); @FILE reads whitespace-separated names from FILE
+  -verbose
+    	also print informational items
+  -workspace_root string
+    	workspace directory (required)
