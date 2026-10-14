@@ -1,0 +1,40 @@
+An extra file may name the workspace root package itself: the prefix is the
+whole package.
+-- args --
+move --src_package=// --dst_package=//sub --extra_file=$TMP/extra/BUILD --extra_label_prefix=third_party/ws
+-- in/BUILD.bazel --
+load(":defs.bzl", "my_library")
+
+my_library(
+    name = "a",
+    srcs = ["sub/a.cpp"],
+)
+-- in/sub/a.cpp --
+-- out/BUILD.bazel --
+-- out/sub/BUILD.bazel --
+load("//:defs.bzl", "my_library")
+
+my_library(
+    name = "a",
+    srcs = ["a.cpp"],
+)
+-- extra/BUILD --
+cc_library(
+    name = "user",
+    deps = [
+        "//third_party/ws:a",
+        "//third_party/ws:other",
+    ],
+)
+-- extra_out/BUILD --
+cc_library(
+    name = "user",
+    deps = [
+        "//third_party/ws/sub:a",
+        "//third_party/ws:other",
+    ],
+)
+-- stderr --
+Moved 1 rules from // to //sub (0 renamed, 0 aliased).
+Rewrote references in 1 files:
+  $TMP/extra/BUILD: 1

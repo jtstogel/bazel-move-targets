@@ -1,0 +1,26 @@
+Absolute labels in .bzl files are rewritten in place, including Label() calls
+and labels with a local repository name. The rest of the file keeps its
+formatting.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --local_repo_names=llvm-project
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+-- in/libc/defs.bzl --
+ATOI = Label("//libc:atoi")
+DEPS = [ "@llvm-project//libc:atoi",   "//libc:other" ]  # Not buildifier-formatted.
+-- out/libc/BUILD.bazel --
+-- out/libc/defs.bzl --
+ATOI = Label("//libc/src/stdlib:atoi")
+DEPS = [ "@llvm-project//libc/src/stdlib:atoi",   "//libc:other" ]  # Not buildifier-formatted.
+-- out/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
+Rewrote references in 1 files:
+  libc/defs.bzl: 2
