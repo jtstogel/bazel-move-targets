@@ -1,0 +1,29 @@
+When appending to an existing package, moved rules that refer to its rules by
+absolute label use the short form.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+    deps = ["//libc/src/stdlib:existing"],
+)
+-- in/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "existing",
+    hdrs = ["existing.h"],
+)
+-- out/libc/BUILD.bazel --
+-- out/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "existing",
+    hdrs = ["existing.h"],
+)
+
+cc_library(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+    deps = [":existing"],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).

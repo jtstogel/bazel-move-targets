@@ -1,0 +1,40 @@
+When every rule of a loaded kind moves, the symbol is removed from the
+source's load. Rules without file attributes get a warning, because their
+macro may compute package-relative paths.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/math --targets=sinf,cosf
+-- in/libc/BUILD.bazel --
+load(":libc_build_rules.bzl", "libc_math_function", "libc_support_library")
+
+libc_support_library(
+    name = "__support_fputil",
+    hdrs = ["src/__support/fputil.h"],
+)
+
+libc_math_function(name = "sinf")
+
+libc_math_function(
+    name = "cosf",
+    additional_deps = [":__support_fputil"],
+)
+-- out/libc/BUILD.bazel --
+load(":libc_build_rules.bzl", "libc_support_library")
+
+libc_support_library(
+    name = "__support_fputil",
+    hdrs = ["src/__support/fputil.h"],
+)
+-- out/libc/src/math/BUILD.bazel --
+load("//libc:libc_build_rules.bzl", "libc_math_function")
+
+libc_math_function(name = "sinf")
+
+libc_math_function(
+    name = "cosf",
+    additional_deps = ["//libc:__support_fputil"],
+)
+-- stderr --
+Moved 2 rules from //libc to //libc/src/math (0 renamed, 0 aliased).
+Warnings (2):
+  libc/BUILD.bazel:8: [no-file-attrs] "sinf" has no file attributes; its macro may compute package-relative paths
+  libc/BUILD.bazel:10: [no-file-attrs] "cosf" has no file attributes; its macro may compute package-relative paths

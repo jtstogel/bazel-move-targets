@@ -1,0 +1,15 @@
+With --strict_source_directories, naming a rule that has files in a
+subdirectory is an error.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --strict_source_directories --targets=abort
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "abort",
+    srcs = ["src/stdlib/linux/abort.cpp"],
+    hdrs = ["src/stdlib/abort.h"],
+)
+-- stderr --
+Errors (1):
+  libc/BUILD.bazel:1: [directory-rule] "abort" has files in subdirectories of src/stdlib/ (--strict_source_directories)
+-- exit --
+1

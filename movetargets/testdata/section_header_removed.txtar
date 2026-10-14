@@ -1,0 +1,59 @@
+A section left empty loses its header. A section that keeps aliases keeps its
+header.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --alias_for_rule_kind=libc_function
+-- in/libc/BUILD.bazel --
+load(":libc_build_rules.bzl", "libc_function", "libc_support_library")
+
+########################## stdlib support targets ##########################
+
+libc_support_library(
+    name = "stdlib_util",
+    hdrs = ["src/stdlib/util.h"],
+)
+
+########################## stdlib function targets #########################
+
+libc_function(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+
+############################## string targets ##############################
+
+libc_function(
+    name = "strlen",
+    srcs = ["src/string/strlen.cpp"],
+)
+-- out/libc/BUILD.bazel --
+load(":libc_build_rules.bzl", "libc_function")
+
+########################## stdlib function targets #########################
+
+alias(
+    name = "atoi",
+    actual = "//libc/src/stdlib:atoi",
+)
+
+############################## string targets ##############################
+
+libc_function(
+    name = "strlen",
+    srcs = ["src/string/strlen.cpp"],
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+load("//libc:libc_build_rules.bzl", "libc_function", "libc_support_library")
+
+libc_support_library(
+    name = "stdlib_util",
+    hdrs = ["util.h"],
+)
+
+libc_function(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+)
+-- stderr --
+Moved 2 rules from //libc to //libc/src/stdlib (0 renamed, 1 aliased).
+Warnings (1):
+  libc/BUILD.bazel:3: [deleted-section-header] removed the header "########################## stdlib support targets ##########################"; its section is now empty

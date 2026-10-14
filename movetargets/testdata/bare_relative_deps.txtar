@@ -1,0 +1,58 @@
+Bare labels in label attributes are relative. A rule that stays gets an
+absolute label; a moved rule gets ":x" or "//libc:x".
+-- args --
+move --src_package=//libc --dst_package=//libc/src/x
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "common",
+    hdrs = ["common.h"],
+)
+
+cc_library(
+    name = "foo",
+    hdrs = ["src/x/foo.h"],
+)
+
+cc_library(
+    name = "bar",
+    hdrs = ["src/x/bar.h"],
+    deps = [
+        "common",
+        "foo",
+    ],
+)
+
+cc_library(
+    name = "user",
+    hdrs = ["user.h"],
+    deps = ["foo"],
+)
+-- out/libc/BUILD.bazel --
+cc_library(
+    name = "common",
+    hdrs = ["common.h"],
+)
+
+cc_library(
+    name = "user",
+    hdrs = ["user.h"],
+    deps = ["//libc/src/x:foo"],
+)
+-- out/libc/src/x/BUILD.bazel --
+cc_library(
+    name = "foo",
+    hdrs = ["foo.h"],
+)
+
+cc_library(
+    name = "bar",
+    hdrs = ["bar.h"],
+    deps = [
+        ":foo",
+        "//libc:common",
+    ],
+)
+-- stderr --
+Moved 2 rules from //libc to //libc/src/x (0 renamed, 0 aliased).
+Rewrote references in 1 files:
+  libc/BUILD.bazel: 1

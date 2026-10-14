@@ -1,0 +1,29 @@
+Package-relative attributes are moved unchanged, with a warning.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+    copts = [
+        "-O2",
+        "-Isrc/stdlib",
+    ],
+    includes = ["."],
+)
+-- out/libc/BUILD.bazel --
+-- out/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+    copts = [
+        "-O2",
+        "-Isrc/stdlib",
+    ],
+    includes = ["."],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
+Warnings (2):
+  libc/BUILD.bazel:1: [package-relative-attr] "atoi" sets includes, which is relative to the package; check it by hand
+  libc/BUILD.bazel:1: [package-relative-attr] "atoi" has copt "-Isrc/stdlib", which may be relative to the package; check it by hand

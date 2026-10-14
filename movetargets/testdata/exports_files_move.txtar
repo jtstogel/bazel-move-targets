@@ -1,0 +1,62 @@
+Exported files under the destination directory move to a new exports_files
+call there, with the same visibility. An emptied call is deleted and its
+comment moves too. File labels in other packages are rewritten.
+-- args --
+move --src_package=//libc --dst_package=//libc/shared
+-- in/flang-rt/BUILD.bazel --
+cc_library(
+    name = "rt",
+    srcs = [
+        "//libc:README.md",
+        "//libc:shared/rpc.h",
+    ],
+)
+-- in/libc/BUILD.bazel --
+# Headers used by flang-rt.
+exports_files(
+    [
+        "shared/rpc.h",
+        "shared/rpc_util.h",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+exports_files([
+    "README.md",
+    "shared/extra.h",
+])
+
+cc_library(
+    name = "shared_rpc",
+    hdrs = ["shared/rpc_server.h"],
+)
+-- out/flang-rt/BUILD.bazel --
+cc_library(
+    name = "rt",
+    srcs = [
+        "//libc:README.md",
+        "//libc/shared:rpc.h",
+    ],
+)
+-- out/libc/BUILD.bazel --
+exports_files(["README.md"])
+-- out/libc/shared/BUILD.bazel --
+# Headers used by flang-rt.
+exports_files(
+    [
+        "rpc.h",
+        "rpc_util.h",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+exports_files(["extra.h"])
+
+cc_library(
+    name = "shared_rpc",
+    hdrs = ["rpc_server.h"],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/shared (0 renamed, 0 aliased).
+Rewrote references in 1 files:
+  flang-rt/BUILD.bazel: 1

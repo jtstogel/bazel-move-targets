@@ -1,0 +1,22 @@
+Glob patterns in a moved rule are re-rooted at the new package.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "stdlib_headers",
+    hdrs = glob(
+        ["src/stdlib/x/*.h"],
+        exclude = ["src/stdlib/x/internal.h"],
+    ),
+)
+-- out/libc/BUILD.bazel --
+-- out/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "stdlib_headers",
+    hdrs = glob(
+        ["x/*.h"],
+        exclude = ["x/internal.h"],
+    ),
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).

@@ -1,0 +1,24 @@
+After re-rooting, a moved glob or file could reach into an existing package
+below the destination: error.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "stdlib_headers",
+    hdrs = glob(["src/stdlib/**/*.h"]),
+)
+
+cc_library(
+    name = "helper",
+    srcs = ["src/stdlib/x/helper.cpp"],
+)
+-- in/libc/src/stdlib/x/BUILD.bazel --
+cc_library(
+    name = "x",
+)
+-- stderr --
+Errors (2):
+  libc/BUILD.bazel:6: [file-in-subpackage] "helper" uses src/stdlib/x/helper.cpp, which is in the existing package //libc/src/stdlib/x
+  libc/BUILD.bazel:3: [glob-reaches-subpackage] glob pattern "src/stdlib/**/*.h" in "stdlib_headers" can reach the existing package //libc/src/stdlib/x
+-- exit --
+1

@@ -1,0 +1,23 @@
+py_binary's main is a file attribute, and imports is reported as relative to
+the package.
+-- args --
+move --src_package=//libc --dst_package=//libc/utils/gen
+-- in/libc/BUILD.bazel --
+py_binary(
+    name = "gen",
+    srcs = ["utils/gen/gen.py"],
+    imports = ["utils"],
+    main = "utils/gen/gen.py",
+)
+-- out/libc/BUILD.bazel --
+-- out/libc/utils/gen/BUILD.bazel --
+py_binary(
+    name = "gen",
+    srcs = ["gen.py"],
+    imports = ["utils"],
+    main = "gen.py",
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/utils/gen (0 renamed, 0 aliased).
+Warnings (1):
+  libc/BUILD.bazel:1: [package-relative-attr] "gen" sets imports, which is relative to the package; check it by hand

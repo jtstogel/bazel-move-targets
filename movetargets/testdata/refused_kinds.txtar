@@ -1,0 +1,34 @@
+A genrule under the destination directory is skipped with a warning.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+genrule(
+    name = "gen",
+    srcs = ["src/stdlib/table.txt"],
+    outs = ["table.inc"],
+    cmd = "cp $(SRCS) $(OUTS)",
+)
+
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+-- out/libc/BUILD.bazel --
+genrule(
+    name = "gen",
+    srcs = ["//libc/src/stdlib:table.txt"],
+    outs = ["table.inc"],
+    cmd = "cp $(SRCS) $(OUTS)",
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
+Rewrote references in 1 files:
+  libc/BUILD.bazel: 1
+Warnings (2):
+  libc/BUILD.bazel:3: [leftover-reference] "src/stdlib/table.txt" now belongs to //libc/src/stdlib; rewritten to "//libc/src/stdlib:table.txt", which needs an exports_files there
+  libc/BUILD.bazel:1: [refused-kind-skipped] genrule "gen" is under src/stdlib/ but kind genrule is never moved

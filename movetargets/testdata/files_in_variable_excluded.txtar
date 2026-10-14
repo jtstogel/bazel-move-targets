@@ -1,0 +1,33 @@
+With --exclude, a rule that gets files under the destination from a
+top-level variable stays, with a warning.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --exclude=stdlib_common
+-- in/libc/BUILD.bazel --
+STDLIB_HDRS = ["src/stdlib/common.h"]
+
+cc_library(
+    name = "stdlib_common",
+    hdrs = STDLIB_HDRS,
+)
+
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+-- out/libc/BUILD.bazel --
+STDLIB_HDRS = ["src/stdlib/common.h"]
+
+cc_library(
+    name = "stdlib_common",
+    hdrs = STDLIB_HDRS,
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
+Warnings (2):
+  libc/BUILD.bazel:1: [assignment-mentions-moved-file] STDLIB_HDRS mentions "src/stdlib/common.h", which moves to //libc/src/stdlib; update it by hand
+  libc/BUILD.bazel:3: [files-in-variable-excluded] "stdlib_common" gets files under src/stdlib/ from the top-level variable STDLIB_HDRS; it stays

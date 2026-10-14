@@ -1,0 +1,21 @@
+A rule that gets files under the destination from a top-level variable is an
+error: the files would move but the variable would not.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+STDLIB_HDRS = ["src/stdlib/common.h"]
+
+cc_library(
+    name = "stdlib_common",
+    hdrs = STDLIB_HDRS,
+)
+
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+-- stderr --
+Errors (1):
+  libc/BUILD.bazel:3: [files-in-variable] "stdlib_common" gets files under src/stdlib/ from the top-level variable STDLIB_HDRS; move the variable with --move_statements, inline it, or pass --exclude=stdlib_common
+-- exit --
+1

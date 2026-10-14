@@ -1,0 +1,86 @@
+Labels in select() keys and values are rewritten in both directions. The
+config_setting and its flag have no files, so they stay.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --include=mode_alias
+-- in/libc/BUILD.bazel --
+string_flag(
+    name = "mode",
+    build_setting_default = "a",
+)
+
+config_setting(
+    name = "mode_a",
+    flag_values = {":mode": "a"},
+)
+
+alias(
+    name = "mode_alias",
+    actual = ":mode_a",
+)
+
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+    deps = select({
+        ":mode_a": [":strtol"],
+        "//conditions:default": [],
+    }),
+)
+
+cc_library(
+    name = "strtol",
+    srcs = ["src/stdlib/strtol.cpp"],
+)
+
+cc_library(
+    name = "user",
+    srcs = ["user.cpp"],
+    deps = selects.with_or({
+        (":mode_alias", ":mode_a"): [":atoi"],
+        "//conditions:default": [],
+    }),
+)
+-- out/libc/BUILD.bazel --
+string_flag(
+    name = "mode",
+    build_setting_default = "a",
+)
+
+config_setting(
+    name = "mode_a",
+    flag_values = {":mode": "a"},
+)
+
+cc_library(
+    name = "user",
+    srcs = ["user.cpp"],
+    deps = selects.with_or({
+        ("//libc/src/stdlib:mode_alias", ":mode_a"): ["//libc/src/stdlib:atoi"],
+        "//conditions:default": [],
+    }),
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+alias(
+    name = "mode_alias",
+    actual = "//libc:mode_a",
+)
+
+cc_library(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+    deps = select({
+        "//libc:mode_a": [":strtol"],
+        "//conditions:default": [],
+    }),
+)
+
+cc_library(
+    name = "strtol",
+    srcs = ["strtol.cpp"],
+)
+-- stderr --
+Moved 3 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
+Rewrote references in 1 files:
+  libc/BUILD.bazel: 2
+Warnings (1):
+  libc/BUILD.bazel:11: [no-file-attrs] "mode_alias" has no file attributes; its macro may compute package-relative paths
