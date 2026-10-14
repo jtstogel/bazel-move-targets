@@ -1,0 +1,51 @@
+.bzl files are never changed. Strings that refer to moved rules are reported,
+including plain ":name" strings that a macro would resolve in the source
+package.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+
+cc_library(
+    name = "common",
+    hdrs = ["common.h"],
+)
+-- in/libc/test/rules.bzl --
+def libc_test(name, deps = []):
+    native.cc_test(
+        name = name,
+        deps = deps + [
+            "//libc:atoi",
+            "//libc:common",
+            ":atoi",
+        ],
+    )
+-- out/libc/BUILD.bazel --
+cc_library(
+    name = "common",
+    hdrs = ["common.h"],
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+)
+-- out/libc/test/rules.bzl --
+def libc_test(name, deps = []):
+    native.cc_test(
+        name = name,
+        deps = deps + [
+            "//libc/src/stdlib:atoi",
+            "//libc:common",
+            ":atoi",
+        ],
+    )
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
+Rewrote references in 1 files:
+  libc/test/rules.bzl: 1
+Warnings (1):
+  libc/test/rules.bzl:7: [bzl-mention] ":atoi" refers to something moved to //libc/src/stdlib; update it by hand
