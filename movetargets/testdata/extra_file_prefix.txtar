@@ -1,0 +1,37 @@
+Labels in files outside the workspace are rewritten when they use the
+--extra_label_prefix spelling. Other labels and the formatting are kept.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --extra_file=$TMP/extra/BUILD --extra_label_prefix=third_party/llvm/llvm-project
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+-- out/libc/BUILD.bazel --
+-- out/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+)
+-- extra/BUILD --
+cc_library(
+    name = "user",
+    deps = [
+        "//libc:atoi",  # Not the prefixed spelling; kept.
+        "//third_party/llvm/llvm-project/libc:atoi",
+        "//third_party/llvm/llvm-project/libc:other",
+    ],
+)
+-- extra_out/BUILD --
+cc_library(
+    name = "user",
+    deps = [
+        "//libc:atoi",  # Not the prefixed spelling; kept.
+        "//third_party/llvm/llvm-project/libc/src/stdlib:atoi",
+        "//third_party/llvm/llvm-project/libc:other",
+    ],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
+Rewrote references in 1 files:
+  $TMP/extra/BUILD: 1
