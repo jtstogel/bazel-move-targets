@@ -1,0 +1,41 @@
+--dry_run prints a unified diff that applies with patch -p1 from the
+workspace root, and writes nothing.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --dry_run
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+
+cc_library(
+    name = "strlen",
+    srcs = ["src/string/strlen.cpp"],
+    deps = [":atoi"],
+)
+-- stdout --
+--- a/libc/BUILD.bazel
++++ b/libc/BUILD.bazel
+@@ -1,10 +1,5 @@
+-cc_library(
+-    name = "atoi",
+-    srcs = ["src/stdlib/atoi.cpp"],
+-)
+-
+ cc_library(
+     name = "strlen",
+     srcs = ["src/string/strlen.cpp"],
+-    deps = [":atoi"],
++    deps = ["//libc/src/stdlib:atoi"],
+ )
+--- /dev/null
++++ b/libc/src/stdlib/BUILD.bazel
+@@ -0,0 +1,4 @@
++cc_library(
++    name = "atoi",
++    srcs = ["atoi.cpp"],
++)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
+Rewrote references in 1 files:
+  libc/BUILD.bazel: 1
