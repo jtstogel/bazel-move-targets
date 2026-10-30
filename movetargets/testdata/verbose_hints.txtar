@@ -1,0 +1,25 @@
+--verbose also lists rules without files, and hints at the ones whose names
+match a strip prefix.
+-- args --
+plan --verbose --src_package=//libc --dst_package=//libc/src/__support/CPP --rename_strip_package_prefix=__support_cpp_ --out=$TMP/config.json
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "__support_cpp_bit",
+    hdrs = ["src/__support/CPP/bit.h"],
+)
+
+cc_library(
+    name = "__support_cpp_all",
+    deps = [":__support_cpp_bit"],
+)
+
+cc_library(
+    name = "everything",
+    deps = [":__support_cpp_all"],
+)
+-- stderr --
+Selected 1 rules to move from //libc to //libc/src/__support/CPP.
+Info (3):
+  libc/BUILD.bazel:6: [file-less] "__support_cpp_all" has no files and is not selected by directory
+  libc/BUILD.bazel:11: [file-less] "everything" has no files and is not selected by directory
+  libc/BUILD.bazel:6: [include-hint] "__support_cpp_all" matches a --rename_strip_package_prefix; consider --include=__support_cpp_all or --include_name_prefix

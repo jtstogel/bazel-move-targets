@@ -1,0 +1,80 @@
+"plan" without --out prints the config to stdout.
+-- args --
+plan --src_package=//libc --dst_package=//libc/src/stdlib --alias_for_rule_kind=libc_function --rename_strip_package_prefix=stdlib_
+-- in/libc/BUILD.bazel --
+load(":libc_build_rules.bzl", "libc_function", "libc_support_library")
+
+libc_support_library(
+    name = "stdlib_util",
+    hdrs = ["src/stdlib/util.h"],
+)
+
+libc_function(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+-- stdout --
+{
+  "src_package": "libc",
+  "dst_package": "libc/src/stdlib",
+  "strict_source_directories": false,
+  "package_comment": "",
+  "label_attrs": [
+    "actual",
+    "additional_deps",
+    "data",
+    "dep",
+    "deps",
+    "exports",
+    "implementation_deps",
+    "plugins",
+    "runtime_deps",
+    "target_compatible_with",
+    "targets",
+    "tests",
+    "libc_functions"
+  ],
+  "file_attrs": [
+    "hdrs",
+    "main",
+    "srcs",
+    "textual_hdrs"
+  ],
+  "refuse_rule_kinds": [
+    "bool_flag",
+    "bool_setting",
+    "config_setting",
+    "genrule",
+    "int_flag",
+    "string_flag",
+    "string_list_flag",
+    "string_setting",
+    "libc_generated_header"
+  ],
+  "package_relative_attrs": [
+    "includes",
+    "strip_include_prefix",
+    "include_prefix",
+    "imports"
+  ],
+  "output_attrs": [
+    "out",
+    "outs"
+  ],
+  "targets": [
+    {
+      "name": "stdlib_util",
+      "new_name": "util",
+      "kind": "libc_support_library",
+      "alias": false
+    },
+    {
+      "name": "atoi",
+      "new_name": "atoi",
+      "kind": "libc_function",
+      "alias": true
+    }
+  ]
+}
+-- stderr --
+Selected 2 rules to move from //libc to //libc/src/stdlib.
