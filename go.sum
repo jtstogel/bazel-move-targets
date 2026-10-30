@@ -1,0 +1,4 @@
+github.com/bazelbuild/buildtools v0.0.0-20260904073137-eaa4d125b423 h1:scNMqf+FgmWYYwsX4TNjQcDLZu5kbWSwNsbrGkiF23I=
+github.com/bazelbuild/buildtools v0.0.0-20260904073137-eaa4d125b423/go.mod h1:jWjcMGVH6hAgMG98abRQOIvoFFLPx/p3e5eeTGIHUMc=
+github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
+github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
