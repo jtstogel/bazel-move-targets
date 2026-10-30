@@ -1,0 +1,15 @@
+A rule can't be both named explicitly and inside a --move_statements range.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --include=atoi --move_statements=3-6
+-- in/libc/BUILD.bazel --
+load(":defs.bzl", "my_rule")
+
+my_rule(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+-- stderr --
+Errors (1):
+  libc/BUILD.bazel:3: [target-in-moved-statements] "atoi" is named explicitly but also lies in a --move_statements range
+-- exit --
+1

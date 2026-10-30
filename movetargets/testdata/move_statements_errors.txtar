@@ -1,0 +1,21 @@
+--move_statements ranges must cover whole statements, must not include loads,
+package() or licenses(), and must not be empty.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --move_statements=1-3 --move_statements=7-8 --move_statements=20-30
+-- in/libc/BUILD.bazel --
+load(":defs.bzl", "x")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+-- stderr --
+Errors (4):
+  [empty-statement-range] --move_statements=20-30 contains no statement
+  libc/BUILD.bazel:1: [statement-range-kind] --move_statements=1-3 includes a load, package() or licenses()
+  libc/BUILD.bazel:3: [statement-range-kind] --move_statements=1-3 includes a load, package() or licenses()
+  libc/BUILD.bazel:5: [statement-range-split] --move_statements=7-8 cuts through the statement on lines 5-8
+-- exit --
+1
