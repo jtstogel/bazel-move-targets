@@ -1,0 +1,18 @@
+A new name that already exists in the destination package is an error.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+-- in/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["other_atoi.cpp"],
+)
+-- stderr --
+Errors (1):
+  libc/BUILD.bazel:1: [collision] //libc/src/stdlib already has a rule named "atoi"
+-- exit --
+1

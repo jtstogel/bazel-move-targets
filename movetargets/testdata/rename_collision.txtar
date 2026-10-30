@@ -1,0 +1,18 @@
+Two moved rules whose names strip to the same new name are an error.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/__support/CPP --rename_strip_package_prefix=__support_cpp_,__support_CPP_
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "__support_cpp_bit",
+    hdrs = ["src/__support/CPP/bit.h"],
+)
+
+cc_library(
+    name = "__support_CPP_bit",
+    hdrs = ["src/__support/CPP/bit2.h"],
+)
+-- stderr --
+Errors (1):
+  libc/BUILD.bazel:6: [collision] more than one rule would be named "bit" in //libc/src/__support/CPP
+-- exit --
+1

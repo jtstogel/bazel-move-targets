@@ -1,0 +1,38 @@
+A rule that stays but uses a file under the destination directory straddles
+it; --exclude acknowledges that. The file reference becomes a label in the new
+package, with a warning, because that package doesn't export it.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --exclude=mixed
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+
+cc_library(
+    name = "mixed",
+    hdrs = [
+        "src/stdlib/foo.h",
+        "src/string/bar.h",
+    ],
+)
+-- out/libc/BUILD.bazel --
+cc_library(
+    name = "mixed",
+    hdrs = [
+        "src/string/bar.h",
+        "//libc/src/stdlib:foo.h",
+    ],
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
+Rewrote references in 1 files:
+  libc/BUILD.bazel: 1
+Warnings (2):
+  libc/BUILD.bazel:9: [leftover-reference] "src/stdlib/foo.h" now belongs to //libc/src/stdlib; rewritten to "//libc/src/stdlib:foo.h", which needs an exports_files there
+  libc/BUILD.bazel:6: [straddling-excluded] "mixed" has files both inside and outside src/stdlib/; it stays and will reference //libc/src/stdlib files

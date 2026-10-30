@@ -1,0 +1,30 @@
+--alias_targets leaves an alias for the named rules only.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --alias_targets=atoi
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+
+cc_library(
+    name = "atol",
+    srcs = ["src/stdlib/atol.cpp"],
+)
+-- out/libc/BUILD.bazel --
+alias(
+    name = "atoi",
+    actual = "//libc/src/stdlib:atoi",
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+)
+
+cc_library(
+    name = "atol",
+    srcs = ["atol.cpp"],
+)
+-- stderr --
+Moved 2 rules from //libc to //libc/src/stdlib (0 renamed, 1 aliased).

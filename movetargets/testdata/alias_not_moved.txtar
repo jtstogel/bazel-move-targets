@@ -1,0 +1,18 @@
+--alias_targets must name something that moves.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib --alias_targets=strlen
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+
+cc_library(
+    name = "strlen",
+    srcs = ["src/string/strlen.cpp"],
+)
+-- stderr --
+Errors (1):
+  [alias-not-moved] --alias_targets=strlen names nothing that moves
+-- exit --
+1

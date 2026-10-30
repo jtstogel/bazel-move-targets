@@ -1,0 +1,34 @@
+A top-level comprehension that mentions the destination directory is reported
+and left in place.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+[cc_library(
+    name = n,
+    srcs = ["src/stdlib/" + n + ".cpp"],
+) for n in [
+    "abs",
+    "labs",
+]]
+
+cc_library(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+-- out/libc/BUILD.bazel --
+[cc_library(
+    name = n,
+    srcs = ["src/stdlib/" + n + ".cpp"],
+) for n in [
+    "abs",
+    "labs",
+]]
+-- out/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
+Warnings (1):
+  libc/BUILD.bazel:1: [comprehension-skipped] comprehension mentions src/stdlib/ but is not moved; use --move_statements

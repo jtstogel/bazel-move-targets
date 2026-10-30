@@ -1,0 +1,99 @@
+Moves the rules whose files are all under src/stdlib. Deps between moved rules
+stay relative; deps on rules that stay become absolute. The new package gets
+the license header, a package comment, the needed loads, package() and
+licenses().
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib "--package_comment=LLVM libc stdlib.h functions."
+-- in/libc/BUILD.bazel --
+# License header.
+
+load(":libc_build_rules.bzl", "libc_function", "libc_support_library")
+
+package(
+    default_visibility = ["//visibility:public"],
+    features = ["layering_check"],
+)
+
+licenses(["notice"])
+
+libc_support_library(
+    name = "__support_common",
+    hdrs = ["src/__support/common.h"],
+)
+
+libc_support_library(
+    name = "stdlib_util",
+    hdrs = ["src/stdlib/util.h"],
+    deps = [":__support_common"],
+)
+
+libc_function(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+    hdrs = ["src/stdlib/atoi.h"],
+    deps = [
+        ":__support_common",
+        ":stdlib_util",
+    ],
+)
+
+libc_function(
+    name = "strlen",
+    srcs = ["src/string/strlen.cpp"],
+    hdrs = ["src/string/strlen.h"],
+    deps = [":__support_common"],
+)
+-- out/libc/BUILD.bazel --
+# License header.
+
+load(":libc_build_rules.bzl", "libc_function", "libc_support_library")
+
+package(
+    default_visibility = ["//visibility:public"],
+    features = ["layering_check"],
+)
+
+licenses(["notice"])
+
+libc_support_library(
+    name = "__support_common",
+    hdrs = ["src/__support/common.h"],
+)
+
+libc_function(
+    name = "strlen",
+    srcs = ["src/string/strlen.cpp"],
+    hdrs = ["src/string/strlen.h"],
+    deps = [":__support_common"],
+)
+-- out/libc/src/stdlib/BUILD.bazel --
+# License header.
+
+# LLVM libc stdlib.h functions.
+
+load("//libc:libc_build_rules.bzl", "libc_function", "libc_support_library")
+
+package(
+    default_visibility = ["//visibility:public"],
+    features = ["layering_check"],
+)
+
+licenses(["notice"])
+
+libc_support_library(
+    name = "stdlib_util",
+    hdrs = ["util.h"],
+    deps = ["//libc:__support_common"],
+)
+
+libc_function(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+    hdrs = ["atoi.h"],
+    deps = [
+        ":stdlib_util",
+        "//libc:__support_common",
+    ],
+)
+-- stderr --
+Moved 2 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).

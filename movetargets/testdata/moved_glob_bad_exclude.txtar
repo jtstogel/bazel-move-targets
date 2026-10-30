@@ -1,0 +1,25 @@
+Exclude patterns of a moved glob that aren't under the destination directory
+match nothing after the move; they are reported, not rejected.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+cc_library(
+    name = "stdlib_headers",
+    hdrs = glob(
+        ["src/stdlib/*.h"],
+        exclude = ["**/internal.h"],
+    ),
+)
+-- out/libc/BUILD.bazel --
+-- out/libc/src/stdlib/BUILD.bazel --
+cc_library(
+    name = "stdlib_headers",
+    hdrs = glob(
+        ["*.h"],
+        exclude = ["**/internal.h"],
+    ),
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
+Warnings (1):
+  libc/BUILD.bazel:5: [glob-exclude-outside-destination] exclude pattern "**/internal.h" in "stdlib_headers" does not start with src/stdlib/ and will match nothing after the move

@@ -1,0 +1,35 @@
+When appending to a package without loads, new loads go below its header
+comment.
+-- args --
+move --src_package=//libc --dst_package=//libc/src/stdlib
+-- in/libc/BUILD.bazel --
+load(":defs.bzl", "libc_function")
+
+libc_function(
+    name = "atoi",
+    srcs = ["src/stdlib/atoi.cpp"],
+)
+-- in/libc/src/stdlib/BUILD.bazel --
+# License header.
+
+cc_library(
+    name = "existing",
+    hdrs = ["existing.h"],
+)
+-- out/libc/BUILD.bazel --
+-- out/libc/src/stdlib/BUILD.bazel --
+# License header.
+
+load("//libc:defs.bzl", "libc_function")
+
+cc_library(
+    name = "existing",
+    hdrs = ["existing.h"],
+)
+
+libc_function(
+    name = "atoi",
+    srcs = ["atoi.cpp"],
+)
+-- stderr --
+Moved 1 rules from //libc to //libc/src/stdlib (0 renamed, 0 aliased).
